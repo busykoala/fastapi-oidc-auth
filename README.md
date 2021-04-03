@@ -1,7 +1,8 @@
 # OpenID Connect for FastAPI
 
-`fastapi-oidc-auth` is an extension to FastAPI that allows you to add OpenID
-Connect based authentication for your endpoints within minutes.
+`fastapi-oidc-auth` is an extension to [FastAPI](https://fastapi.tiangolo.com/)
+that allows you to add OpenID Connect based authentication for your endpoints
+within minutes.
 
 ## Installation
 
@@ -21,9 +22,9 @@ from typing import Dict
 from fastapi import FastAPI
 from fastapi import Request
 
-from app.oidc_util import OpenIDConnectUtil
+from fastapi_oidc_auth.auth import OpenIDConnect
 
-# realm 
+# realm (e.g. Keycloak instance)
 host = "http://localhost:8080"
 realm = "example-realm"
 client_id = "example-client"
@@ -36,7 +37,7 @@ app = FastAPI()
 
 @app.get("/very-secret")
 @oidc.require_login
-async def peter(request: Request) -> Dict:
+async def very_secret(request: Request) -> Dict:
     return {"message": "success", "user_info": request.user_info}
 ```
 
@@ -45,3 +46,4 @@ async def peter(request: Request) -> Dict:
 - Implement testing
 - Maybe release package
 - Possibly refactor to a more FastAPIish style (middleware/depends)
+- Make more configurable
