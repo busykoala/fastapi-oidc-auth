@@ -1,16 +1,15 @@
-import json
-import logging
 from base64 import b64encode
 from functools import wraps
+import json
 from json.decoder import JSONDecodeError
+import logging
 from typing import Dict
 from urllib.parse import quote
 
-import jwt
-import requests
 from fastapi import Request
-from jwt.exceptions import DecodeError
-from jwt.exceptions import InvalidTokenError
+import jwt
+from jwt.exceptions import DecodeError, InvalidTokenError
+import requests
 from starlette.responses import RedirectResponse
 
 from fastapi_oidc_auth.exceptions import OpenIDConnectException
@@ -44,9 +43,7 @@ class OpenIDConnect:
         self.userinfo_endpoint = endpoints.get("userinfo_endpoint")
         self.jwks_uri = endpoints.get("jwks_uri")
 
-    def authenticate(
-        self, code: str, callback_uri: str, get_user_info: bool = False
-    ) -> Dict:
+    def authenticate(self, code: str, callback_uri: str, get_user_info: bool = False) -> Dict:
         auth_token = self.get_auth_token(code, callback_uri)
         id_token = auth_token.get("id_token")
         try:
@@ -79,9 +76,7 @@ class OpenIDConnect:
             "code": code,
             "redirect_uri": callback_uri,
         }
-        response = requests.post(
-            self.token_endpoint, data=data, headers=headers
-        )
+        response = requests.post(self.token_endpoint, data=data, headers=headers)
         return self.to_dict_or_raise(response)
 
     def obtain_validated_token(self, alg: str, id_token: str) -> Dict:
@@ -95,9 +90,7 @@ class OpenIDConnect:
                 )
             except InvalidTokenError:
                 logger.error("An error occurred while decoding the id_token")
-                raise OpenIDConnectException(
-                    "An error occurred while decoding the id_token"
-                )
+                raise OpenIDConnectException("An error occurred while decoding the id_token")
         elif alg == "RS256":
             response = requests.get(self.jwks_uri)
             web_key_sets = self.to_dict_or_raise(response)
@@ -112,9 +105,7 @@ class OpenIDConnect:
                 )
             except InvalidTokenError:
                 logger.error("An error occurred while decoding the id_token")
-                raise OpenIDConnectException(
-                    "An error occurred while decoding the id_token"
-                )
+                raise OpenIDConnectException("An error occurred while decoding the id_token")
         else:
             raise OpenIDConnectException("Unsupported jwt algorithm found.")
 
@@ -124,9 +115,7 @@ class OpenIDConnect:
             kid = jwk.get("kid")
             if not kid:
                 continue
-            public_keys[kid] = jwt.algorithms.RSAAlgorithm.from_jwk(
-                json.dumps(jwk)
-            )
+            public_keys[kid] = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
         try:
             kid = jwt.get_unverified_header(id_token).get("kid")
         except DecodeError:
@@ -153,37 +142,25 @@ class OpenIDConnect:
     def to_dict_or_raise(response: requests.Response) -> Dict:
         if response.status_code != 200:
             logger.error(f"Returned with status {response.status_code}.")
-            raise OpenIDConnectException(
-                f"Status code {response.status_code} for {response.url}."
-            )
+            raise OpenIDConnectException(f"Status code {response.status_code} for {response.url}.")
         try:
             return response.json()
         except JSONDecodeError:
             logger.error("Unable to decode json.")
-            raise OpenIDConnectException(
-                "Was not able to retrieve data from the response."
-            )
+            raise OpenIDConnectException("Was not able to retrieve data from the response.")
 
     def require_login(self, view_func):
         @wraps(view_func)
-        async def decorated(
-            request: Request, get_user_info: bool = False, *args, **kwargs
-        ):
+        async def decorated(request: Request, get_user_info: bool = False, *args, **kwargs):
             callback_uri = f"{request.url.scheme}://{request.url.netloc}{request.url.path}"  # noqa
             code = request.query_params.get("code")
             if not code:
-                return RedirectResponse(
-                    self.get_auth_redirect_uri(callback_uri)
-                )
+                return RedirectResponse(self.get_auth_redirect_uri(callback_uri))
             try:
-                user_info = self.authenticate(
-                    code, callback_uri, get_user_info=get_user_info
-                )
+                user_info = self.authenticate(code, callback_uri, get_user_info=get_user_info)
                 request.__setattr__("user_info", user_info)
                 return await view_func(request, *args, **kwargs)
             except OpenIDConnectException:
-                return RedirectResponse(
-                    self.get_auth_redirect_uri(callback_uri)
-                )
+                return RedirectResponse(self.get_auth_redirect_uri(callback_uri))
 
         return decorated

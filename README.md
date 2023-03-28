@@ -1,49 +1,76 @@
 # OpenID Connect for FastAPI
 
-`fastapi-oidc-auth` is an extension to [FastAPI](https://fastapi.tiangolo.com/)
-that allows you to add OpenID Connect based authentication for your endpoints
-within minutes.
+`fastapi-oidc-auth` is an extension to
+[FastAPI](https://fastapi.tiangolo.com/) that allows you to add OpenID
+Connect based authentication for your endpoints within minutes.
 
 ## Installation
 
 ```
-# TODO: not yet released
-poetry add fastapi-oidc-auth
+pip install fastapi-oidc-auth
+```
+
+## Keycloak settings
+
+### Admin
+
+```
+admin_username = "admin"
+admin_password = "admin"
+host = "http://localhost:8080"
+```
+
+### Realm
+
+```
+realm = "myrealm"
+```
+
+### Client
+
+Set the `Access Type` to `confidential` and `Standard Flow Enabled` to
+`ON`. Make sure that `Valid Redirect URIs` contain the URI of your app
+or `*` if you want to allow all URIs. Make sure `Client Protocol` is
+set to `openid-connect`.
+
+```
+client = "myclient"
+secret = "xZEIb4wGoWseNumHJ4Vb7pYvdX3SIQeg"
+```
+
+### User
+
+```
+user_username = "myuser"
+user_password = "myuser"
 ```
 
 ## How to use
 
-The package provides a simple decorator `@oidc.login_required` to protect
-an endpoint. You can retrieve the user info directly from the request object.
+See test.py for a complete example.
 
-```py
-from typing import Dict
+## Testing
 
-from fastapi import FastAPI
-from fastapi import Request
+To start a Keycloak instance for testing, run the following command:
 
-from fastapi_oidc_auth.auth import OpenIDConnect
-
-# realm (e.g. Keycloak instance)
-host = "http://localhost:8080"
-realm = "example-realm"
-client_id = "example-client"
-client_secret = "xxx765cd-20ba-44a3-9584-784807a36906"
-app_uri = "http://localhost:5000"
-
-oidc = OpenIDConnect(host, realm, app_uri, client_id, client_secret)
-app = FastAPI()
-
-
-@app.get("/very-secret")
-@oidc.require_login
-async def very_secret(request: Request) -> Dict:
-    return {"message": "success", "user_info": request.user_info}
+```
+docker run  -p 8080:8080 \
+            -e KEYCLOAK_USER=admin \
+            -e KEYCLOAK_PASSWORD=admin \
+            -e KEYCLOAK_IMPORT=/opt/jboss/keycloak/imports/realm-export.json \
+            -v ./realm-export.json:/opt/jboss/keycloak/imports/realm-export.json \
+            -v $(pwd):/tmp \
+            --name keycloak \
+            jboss/keycloak:16.1.1
 ```
 
-## Ongoing Work
+To export the realm configuration, run the following command:
 
-- Implement testing
-- Maybe release package
-- Possibly refactor to a more FastAPIish style (middleware/depends)
-- Make more configurable
+```
+docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh \
+-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=export \
+-Dkeycloak.migration.provider=singleFile \
+-Dkeycloak.migration.realmName=myrealm \
+-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
+-Dkeycloak.migration.file=/tmp/realm-export.json
+```
