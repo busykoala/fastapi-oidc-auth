@@ -1,13 +1,13 @@
 # OpenID Connect for FastAPI
 
-`fastapi-oidc-auth` is an extension to
+`prokie-fastapi-oidc-auth` is an extension to
 [FastAPI](https://fastapi.tiangolo.com/) that allows you to add OpenID
 Connect based authentication for your endpoints within minutes.
 
 ## Installation
 
 ```
-pip install fastapi-oidc-auth
+pip install prokie-fastapi-oidc-auth
 ```
 
 ## Keycloak settings
