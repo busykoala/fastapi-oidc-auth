@@ -3,7 +3,6 @@ from functools import wraps
 import json
 from json.decoder import JSONDecodeError
 import logging
-from typing import Dict
 from urllib.parse import quote
 
 from fastapi import Request
@@ -43,7 +42,7 @@ class OpenIDConnect:
         self.userinfo_endpoint = endpoints.get("userinfo_endpoint")
         self.jwks_uri = endpoints.get("jwks_uri")
 
-    def authenticate(self, code: str, callback_uri: str, get_user_info: bool = False) -> Dict:
+    def authenticate(self, code: str, callback_uri: str, get_user_info: bool = False) -> dict:
         auth_token = self.get_auth_token(code, callback_uri)
         id_token = auth_token.get("id_token")
         try:
@@ -66,7 +65,7 @@ class OpenIDConnect:
             quote(callback_uri),
         )
 
-    def get_auth_token(self, code: str, callback_uri: str) -> str:
+    def get_auth_token(self, code: str, callback_uri: str) -> dict:
         authstr = "Basic " + b64encode(
             f"{self.client_id}:{self.client_secret}".encode("utf-8")
         ).decode("utf-8")
@@ -79,7 +78,7 @@ class OpenIDConnect:
         response = requests.post(self.token_endpoint, data=data, headers=headers)
         return self.to_dict_or_raise(response)
 
-    def obtain_validated_token(self, alg: str, id_token: str) -> Dict:
+    def obtain_validated_token(self, alg: str, id_token: str) -> dict:
         if alg == "HS256":
             try:
                 return jwt.decode(
@@ -109,7 +108,7 @@ class OpenIDConnect:
         else:
             raise OpenIDConnectException("Unsupported jwt algorithm found.")
 
-    def extract_token_key(self, jwks: Dict, id_token: str) -> str:
+    def extract_token_key(self, jwks: dict, id_token: str) -> str:
         public_keys = {}
         for jwk in jwks:
             kid = jwk.get("kid")
@@ -123,14 +122,14 @@ class OpenIDConnect:
             raise OpenIDConnectException("kid could not be extracted.")
         return public_keys.get(kid)
 
-    def get_user_info(self, access_token: str) -> Dict:
+    def get_user_info(self, access_token: str) -> dict:
         bearer = "Bearer {}".format(access_token)
         headers = {"Authorization": bearer}
         response = requests.get(self.userinfo_endpoint, headers=headers)
         return self.to_dict_or_raise(response)
 
     @staticmethod
-    def validate_sub_matching(token: Dict, user_info: Dict) -> None:
+    def validate_sub_matching(token: dict, user_info: dict) -> None:
         token_sub = ""  # nosec
         if token:
             token_sub = token.get("sub")
@@ -139,7 +138,7 @@ class OpenIDConnect:
             raise OpenIDConnectException("Subject mismatch error.")
 
     @staticmethod
-    def to_dict_or_raise(response: requests.Response) -> Dict:
+    def to_dict_or_raise(response: requests.Response) -> dict:
         if response.status_code != 200:
             logger.error(f"Returned with status {response.status_code}.")
             raise OpenIDConnectException(f"Status code {response.status_code} for {response.url}.")
