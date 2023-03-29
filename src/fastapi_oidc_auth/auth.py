@@ -27,14 +27,15 @@ class OpenIDConnect:
         client_id: str,
         client_secret: str,
         scope: str = "openid email profile",
+        verify: bool = True,
     ) -> None:
         self.app_uri = app_uri
         self.scope = scope
         self.client_id = client_id
         self.client_secret = client_secret
-
+        self.verify = verify
         endpoints = self.to_dict_or_raise(
-            requests.get(self.well_known_pattern.format(host, realm), verify=False)
+            requests.get(self.well_known_pattern.format(host, realm), verify=self.verify)
         )
         self.issuer = endpoints.get("issuer")
         self.authorization_endpoint = endpoints.get("authorization_endpoint")
@@ -84,7 +85,9 @@ class OpenIDConnect:
             "code": code,
             "redirect_uri": callback_uri,
         }
-        response = requests.post(self.token_endpoint, data=data, headers=headers)
+        response = requests.post(
+            self.token_endpoint, data=data, headers=headers, verify=self.verify
+        )
         return self.to_dict_or_raise(response)
 
     def obtain_validated_token(self, alg: str, id_token: str) -> dict:
@@ -100,7 +103,7 @@ class OpenIDConnect:
                 logger.error("An error occurred while decoding the id_token")
                 raise OpenIDConnectException("An error occurred while decoding the id_token")
         elif alg == "RS256":
-            response = requests.get(self.jwks_uri)
+            response = requests.get(self.jwks_uri, verify=self.verify)
             web_key_sets = self.to_dict_or_raise(response)
             jwks = web_key_sets.get("keys")
             public_key = self.extract_token_key(jwks, id_token)
@@ -134,7 +137,7 @@ class OpenIDConnect:
     def get_user_info(self, access_token: str) -> dict:
         bearer = "Bearer {}".format(access_token)
         headers = {"Authorization": bearer}
-        response = requests.get(self.userinfo_endpoint, headers=headers)
+        response = requests.get(self.userinfo_endpoint, headers=headers, verify=self.verify)
         return self.to_dict_or_raise(response)
 
     @staticmethod
