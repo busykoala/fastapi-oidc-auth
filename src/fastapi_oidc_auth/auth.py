@@ -34,13 +34,15 @@ class OpenIDConnect:
         self.client_secret = client_secret
 
         endpoints = self.to_dict_or_raise(
-            requests.get(self.well_known_pattern.format(host, realm))
+            requests.get(self.well_known_pattern.format(host, realm), verify=False)
         )
         self.issuer = endpoints.get("issuer")
         self.authorization_endpoint = endpoints.get("authorization_endpoint")
         self.token_endpoint = endpoints.get("token_endpoint")
         self.userinfo_endpoint = endpoints.get("userinfo_endpoint")
         self.jwks_uri = endpoints.get("jwks_uri")
+        self.logout_endpoint = endpoints.get("end_session_endpoint")
+        self.refresh_token_endpoint = endpoints.get("refresh_token_endpoint")
 
     def authenticate(self, code: str, callback_uri: str, get_user_info: bool = False) -> dict:
         auth_token = self.get_auth_token(code, callback_uri)
@@ -57,7 +59,14 @@ class OpenIDConnect:
         self.validate_sub_matching(validated_token, user_info)
         return user_info
 
-    def get_auth_redirect_uri(self, callback_uri):
+    def logout(self, request: Request) -> RedirectResponse:
+        callback_uri = f"{request.url.scheme}://{request.url.netloc}"
+        return RedirectResponse(
+            f"{self.logout_endpoint}?response_type=code&scope={self.scope}&client_id=myclient&"
+            f"redirect_uri={quote(callback_uri)}"
+        )
+
+    def get_auth_redirect_uri(self, callback_uri: str) -> str:
         return "{}?response_type=code&scope={}&client_id={}&redirect_uri={}".format(  # noqa
             self.authorization_endpoint,
             self.scope,

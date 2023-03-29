@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Request
+from starlette.responses import RedirectResponse
+import uvicorn
 
 from fastapi_oidc_auth.auth import OpenIDConnect
 
@@ -13,18 +15,26 @@ app = FastAPI()
 
 
 @app.get("/")
+async def homepage(request: Request) -> dict[str, str]:
+    return {"message": "Not a secret"}
+
+
+@app.get("/secret")
 @oidc.require_login
-async def very_secret(request: Request):
-    return {"message": "success", "user_info": request.user_info}
+async def secret(request: Request) -> dict[str, str]:
+    return {"message": "Secret"}
+
+
+@app.get("/login")
+@oidc.require_login
+async def login(request: Request) -> dict[str, str]:
+    return {"message": "success", "user_info": request["user_info"]}
 
 
 @app.get("/logout")
-async def logout(request: Request):
-    oidc.logout()
-    return {"message": " success", "user_info": request.user_info}
+async def logout(request: Request) -> RedirectResponse:
+    return oidc.logout(request=request)
 
 
 if __name__ == "__main__":
-    import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=5000)
