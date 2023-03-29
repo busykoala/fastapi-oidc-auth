@@ -12,9 +12,15 @@ oidc = OpenIDConnect(host, realm, app_uri, client_id, client_secret)
 app = FastAPI()
 
 
-@app.get("/very-secret")
+@app.get("/")
 @oidc.require_login
-async def very_secret(request: Request) -> dict[str, str]:
+async def very_secret(request: Request):
+    return {"message": "success", "user_info": request.user_info}
+
+
+@app.get("/logout")
+async def logout(request: Request):
+    oidc.logout()
     return {"message": " success", "user_info": request.user_info}
 
 

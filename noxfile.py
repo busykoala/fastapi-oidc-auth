@@ -21,3 +21,10 @@ def lint(s: nox.Session) -> None:
 @nox.session(venv_backend="none")
 def type_check(s: nox.Session) -> None:
     s.run("mypy", "src", "noxfile.py")
+
+
+@nox.session(venv_backend="none")
+def test(s: nox.Session) -> None:
+    s.run("pytest", "-v", "--cov", "-s")
+    s.run("coverage", "report")
+    s.run("coverage", "xml")

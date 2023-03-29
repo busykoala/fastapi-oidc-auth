@@ -54,7 +54,7 @@ See test.py for a complete example.
 To start a Keycloak instance for testing, run the following command:
 
 ```
-docker run  -p 8080:8080 \
+docker run -d -p 8080:8080 \
             -e KEYCLOAK_USER=admin \
             -e KEYCLOAK_PASSWORD=admin \
             -e KEYCLOAK_IMPORT=/opt/jboss/keycloak/imports/realm-export.json \
