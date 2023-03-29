@@ -30,8 +30,8 @@ realm = "myrealm"
 
 Set the `Access Type` to `confidential` and `Standard Flow Enabled` to
 `ON`. Make sure that `Valid Redirect URIs` contain the URI of your app
-or `*` if you want to allow all URIs. Make sure `Client Protocol` is
-set to `openid-connect`.
+or `*` if you want to allow all URIs. Make sure `Client Protocol` is set
+to `openid-connect`.
 
 ```
 client = "myclient"
