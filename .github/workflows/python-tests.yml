@@ -1,0 +1,42 @@
+name: pytest with Keycloak
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.8', '3.9', '3.10' , '3.11']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Start Keycloak container
+      run: |
+        docker run -d -p 8080:8080 \
+            -e KEYCLOAK_USER=admin \
+            -e KEYCLOAK_PASSWORD=admin \
+            -e KEYCLOAK_IMPORT=/opt/jboss/keycloak/imports/realm-export.json \
+            -v $(pwd)/realm-export.json:/opt/jboss/keycloak/imports/realm-export.json \
+            --name keycloak \
+            jboss/keycloak:16.1.1
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Pip
+      run: python -m pip install --upgrade pip wheel
+    
+    - name: Install dependencies
+      run: pip install -e .[development]
+
+    - name: Wait for Infrastructure to be ready
+      run: |
+        chmod +x tests/wait_for_service.sh & bash tests/wait_for_service.sh http://localhost:8085 200 100
+        
+    - name: Run tests
+      run: nox -s tests   
