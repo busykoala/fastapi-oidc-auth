@@ -4,13 +4,16 @@ requires = ["setuptools", "setuptools-scm"]
 
 [project]
 description = "OIDC auth in fastapi using a decorator"
-name = "fastapi-oidc-auth"
+name = "prokie-fastapi-oidc-auth"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = ["fastapi", "PyJWT[crypto]", "requests", "uvicorn"]
 version = "0.1.0"
-authors = [{ name = "Matthias Osswald", email = "m@osswald.li" }]
+authors = [
+    { name = "Matthias Osswald", email = "m@osswald.li" },
+    { name = "Pontus Thomsson", email = "p@gmail.com" },
+]
 license = { text = "GPL-3.0-or-later" }
 
 
