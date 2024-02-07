@@ -10,7 +10,7 @@ keywords = ["fastapi", "oidc", "authentication"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-fastapi = "^0.63.0"
+fastapi = "^0.109.1"
 PyJWT = {extras = ["crypto"], version = "^2.0.1"}
 requests = "^2.25.1"
 uvicorn = "^0.13.4"
