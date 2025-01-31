@@ -1,10 +1,10 @@
 import json
 import logging
-import urllib
 from base64 import b64encode
 from functools import wraps
 from json.decoder import JSONDecodeError
 from typing import Dict
+from urllib.parse import quote
 
 import jwt
 import requests
@@ -61,15 +61,8 @@ class OpenIDConnect:
         self.validate_sub_matching(validated_token, user_info)
         return user_info
 
-    def get_auth_redirect_uri(self, redirect_uri: str) -> str:
-        encoded_redirect_uri = urllib.parse.quote(redirect_uri, safe="")
-        auth_uri = (
-            f"https://example.com/auth?response_type=code"
-            f"&scope=openid email profile"
-            f"&client_id={self.client_id}"
-            f"&redirect_uri={encoded_redirect_uri}"
-        )
-        return auth_uri
+    def get_auth_redirect_uri(self, callback_uri):
+        return f"{self.authorization_endpoint}?response_type=code&scope={quote(self.scope)}&client_id={quote(self.client_id)}&redirect_uri={quote(callback_uri, safe='')}"
 
     def get_auth_token(self, code: str, callback_uri: str) -> str:
         authstr = "Basic " + b64encode(
