@@ -1,4 +1,5 @@
 import pytest
+
 from fastapi_oidc_auth.exceptions import OpenIDConnectException
 
 

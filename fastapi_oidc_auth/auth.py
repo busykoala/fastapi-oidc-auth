@@ -5,7 +5,6 @@ from base64 import b64encode
 from functools import wraps
 from json.decoder import JSONDecodeError
 from typing import Dict
-from urllib.parse import quote
 
 import jwt
 import requests

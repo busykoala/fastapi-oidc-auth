@@ -43,7 +43,19 @@ async def very_secret(request: Request) -> Dict:
 
 ## Ongoing Work
 
-- Implement testing
 - Maybe release package
 - Possibly refactor to a more FastAPIish style (middleware/depends)
 - Make more configurable
+
+## Develompent
+
+```bash
+poetry install
+
+# Run tests
+poetry run pytest
+
+# Run linter
+poetry run ruff format
+poetry run ruff check --fix
+```

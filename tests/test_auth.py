@@ -1,6 +1,8 @@
-import pytest
-import jwt
 from unittest.mock import patch
+
+import jwt
+import pytest
+
 from fastapi_oidc_auth.auth import OpenIDConnectException
 
 

@@ -1,6 +1,9 @@
-import pytest
+from unittest.mock import MagicMock
+from unittest.mock import patch
+
 import jwt
-from unittest.mock import patch, MagicMock
+import pytest
+
 from fastapi_oidc_auth.auth import OpenIDConnect
 
 
