@@ -10,30 +10,25 @@ keywords = ["fastapi", "oidc", "authentication"]
 
 [tool.poetry.dependencies]
 python = ">= 3.9, < 4.0"
-fastapi = "^0.109.2"
+fastapi = "^0.115.8"
 PyJWT = {extras = ["crypto"], version = "^2.8"}
 requests = "^2.32"
-uvicorn = "^0.27"
+uvicorn = "^0.34"
 
-[tool.poetry.dev-dependencies]
-flake9 = "*"
-isort = "*"
-black = "*"
-bandit = "*"
-
-[tool.black]
-line_length = 79
-
-[tool.flake8]
-max-complexity = 15
-max-line-length = 79
-extend-ignore = "E203"
-
-[tool.isort]
-line_length = 79
-include_trailing_comma = true
-force_single_line = true
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+ruff = "*"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "Q", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
