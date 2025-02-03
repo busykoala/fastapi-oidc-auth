@@ -62,12 +62,7 @@ class OpenIDConnect:
         return user_info
 
     def get_auth_redirect_uri(self, callback_uri):
-        return "{}?response_type=code&scope={}&client_id={}&redirect_uri={}".format(  # noqa
-            self.authorization_endpoint,
-            self.scope,
-            self.client_id,
-            quote(callback_uri),
-        )
+        return f"{self.authorization_endpoint}?response_type=code&scope={quote(self.scope)}&client_id={quote(self.client_id)}&redirect_uri={quote(callback_uri, safe='')}"
 
     def get_auth_token(self, code: str, callback_uri: str) -> str:
         authstr = "Basic " + b64encode(
