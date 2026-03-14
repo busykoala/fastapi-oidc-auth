@@ -11,7 +11,7 @@ keywords = ["fastapi", "oidc", "authentication"]
 [tool.poetry.dependencies]
 python = ">= 3.9, < 4.0"
 fastapi = "^0.115.8"
-PyJWT = {extras = ["crypto"], version = "^2.8"}
+PyJWT = {extras = ["crypto"], version = "^2.12"}
 requests = "^2.32"
 uvicorn = "^0.34"
 
